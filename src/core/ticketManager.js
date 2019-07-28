@@ -38,11 +38,13 @@ export default class TicketManager {
     return getSum(this.rows.map(row => row.getFreeNum()))
   }
   
+  // 分配开始
   distribute (seatsNum) {
     let sum = 0
     let tmpRegion = [0, 0]
     let hasGoldSeat = false
-
+    
+    // 获取每排的黄金座位种数和普通座位种数
     let rowMap = this.rows.map(row => {
       const { goldSeat, normalSeat } = row.getAvailableSeatsCount(seatsNum)
 
@@ -59,7 +61,8 @@ export default class TicketManager {
     })
     
     let weightMap = []
-
+    
+    // 根据每排的可选种数占所有种数的比重设定权重区间
     rowMap.forEach(row => {
       let count = hasGoldSeat ? row.goldSeat.length : row.normalSeat.length
       if (count > 0) {
@@ -74,7 +77,8 @@ export default class TicketManager {
         })
       }
     })
-
+    
+    // 当没有一排满足连座号时，票数对半 分两次购买
     if (sum < 1) {
       const seatsHalfA = Math.floor(seatsNum / 2) + 1
       const seatsHalfB = seatsNum - seatsHalfA
@@ -84,8 +88,8 @@ export default class TicketManager {
       return 
     }
 
+    // 根据权重随机某一排
     let random = getRandom(sum)
-
     const tmp = weightMap.find(row => {
       let { region } = row
       let [start, end] = region
@@ -94,7 +98,9 @@ export default class TicketManager {
     const keyRow = this.rows.find(row => {
       return row.id === tmp.id
     })
+    // 对选中的那一排进行座位随机并锁定
     keyRow.lockSeat(seatsNum)
+    // 重绘座位图
     this.repaint()
   }
 }
